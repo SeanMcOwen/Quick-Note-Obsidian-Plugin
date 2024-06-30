@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TAbstractFile } from 'obsidian';
 
 // Remember to rename these classes and interfaces!
 
@@ -76,6 +76,26 @@ export default class MyPlugin extends Plugin {
 
 		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
 		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+
+		this.registerEvent(this.app.workspace.on('editor-menu', (menu, editor, view) => {
+            menu.addItem(item => {
+                item.setTitle('Silently Create Note');
+                item.setIcon('pencil'); // Set an icon for the menu item
+                item.onClick(() => this.createNoteSilent(editor));
+            });
+        }));
+	}
+
+	createNoteSilent(editor: Editor){
+		const selectedText = editor.getSelection()
+		const allFiles = this.app.vault.getAllLoadedFiles().map((x: TAbstractFile) => {return x.name.toLowerCase().replace(".md", "")})
+		if (!allFiles.contains(selectedText.toLowerCase())){this.createNote(selectedText)}
+		editor.replaceSelection("[[" + selectedText + "]]")
+	}
+
+	async createNote(filename: string) {
+		const fileName = filename+".md";
+		const file = await this.app.vault.create(fileName, '');
 	}
 
 	onunload() {
