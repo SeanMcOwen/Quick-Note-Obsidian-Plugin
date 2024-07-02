@@ -80,8 +80,16 @@ export default class MyPlugin extends Plugin {
 		this.registerEvent(this.app.workspace.on('editor-menu', (menu, editor, view) => {
             menu.addItem(item => {
                 item.setTitle('Silently Create Note');
-                item.setIcon('pencil'); // Set an icon for the menu item
+                item.setIcon('pencil'); 
                 item.onClick(() => this.createNoteSilent(editor));
+            });
+        }));
+
+		this.registerEvent(this.app.workspace.on('editor-menu', (menu, editor, view) => {
+            menu.addItem(item => {
+                item.setTitle('Link to Note as Alias');
+                item.setIcon('pencil');
+                item.onClick(() => this.aliasLink(editor));
             });
         }));
 	}
@@ -91,6 +99,10 @@ export default class MyPlugin extends Plugin {
 		const allFiles = this.app.vault.getAllLoadedFiles().map((x: TAbstractFile) => {return x.name.toLowerCase().replace(".md", "")})
 		if (!allFiles.contains(selectedText.toLowerCase())){this.createNote(selectedText)}
 		editor.replaceSelection("[[" + selectedText + "]]")
+	}
+
+	aliasLink(editor: Editor){
+		new AliasLinkModal(this.app).open();
 	}
 
 	async createNote(filename: string) {
@@ -108,6 +120,21 @@ export default class MyPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+}
+
+class AliasLinkModal extends Modal{
+	constructor(app: App) {
+		super(app);
+	}
+	onOpen() {
+		const {contentEl} = this;
+		contentEl.setText('Woah!');
+	}
+
+	onClose() {
+		const {contentEl} = this;
+		contentEl.empty();
 	}
 }
 
