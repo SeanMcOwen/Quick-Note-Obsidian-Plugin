@@ -129,7 +129,12 @@ class AliasLinkModal extends Modal{
 	}
 	onOpen() {
 		const {contentEl} = this;
-		contentEl.setText('Woah!');
+		this.
+		contentEl.createEl("h1", { text: "Link as Alias" });
+		contentEl.createEl("p", { text: "Display Text: "});
+		//Display text -> Equals the selection
+		//Alias Name -> Dropdown kind of thing for what to set the alias
+
 	}
 
 	onClose() {
