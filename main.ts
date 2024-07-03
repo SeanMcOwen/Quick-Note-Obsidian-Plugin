@@ -102,7 +102,7 @@ export default class MyPlugin extends Plugin {
 	}
 
 	aliasLink(editor: Editor){
-		new AliasLinkModal(this.app).open();
+		new AliasLinkModal(this.app, editor).open();
 	}
 
 	async createNote(filename: string) {
@@ -124,14 +124,15 @@ export default class MyPlugin extends Plugin {
 }
 
 class AliasLinkModal extends Modal{
-	constructor(app: App) {
+	editor: Editor
+	constructor(app: App, editor: Editor) {
 		super(app);
+		this.editor = editor
 	}
 	onOpen() {
 		const {contentEl} = this;
-		this.
 		contentEl.createEl("h1", { text: "Link as Alias" });
-		contentEl.createEl("p", { text: "Display Text: "});
+		contentEl.createEl("p", { text: "Display Text: " + this.editor.getSelection()});
 		//Display text -> Equals the selection
 		//Alias Name -> Dropdown kind of thing for what to set the alias
 
