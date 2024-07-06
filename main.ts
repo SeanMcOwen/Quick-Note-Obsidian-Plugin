@@ -111,7 +111,6 @@ export default class MyPlugin extends Plugin {
 
 	aliasLink(editor: Editor){
 		new AliasLinkModal(this.app, editor, this).open();
-		//new AliasSuggestModel(this.app).open()
 	}
 
 	async createNote(filename: string) {
@@ -145,10 +144,12 @@ class AliasLinkModal extends Modal{
 		contentEl.createEl("h1", { text: "Link as Alias" });
 		contentEl.createEl("p", { text: "Display Text: " + this.editor.getSelection()});
 
+		const handler = (item: TFile, evt: MouseEvent | KeyboardEvent) => {console.log(item)}
+
 		new Setting(contentEl)
       .setName("Name")
       .addText((text) =>
-	  text.inputEl.onClickEvent(() => new AliasSuggestModel(this.app, this.plugin).open())
+	  text.inputEl.onClickEvent(() => new AliasSuggestModel(this.app, this.plugin, handler).open())
         //text.onChange((value) => {
         //  console.log(value)
         //})
@@ -174,14 +175,14 @@ class AliasLinkModal extends Modal{
 	}
 }
 
-const ALL_OPTIONS = ["A", "B", "C", "AA", "BB", "CC"]
 
 export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 	plugin: MyPlugin
-	constructor(app: App, plugin: MyPlugin) {
+	handler: (item: TFile, evt: MouseEvent | KeyboardEvent) => void
+	constructor(app: App, plugin: MyPlugin, handler: (item: TFile, evt: MouseEvent | KeyboardEvent) => void) {
 		super(app);
 		this.plugin = plugin
-		console.log(plugin.notes)
+		this.handler = handler
 	}
 	getItems(): TFile[] {
 	  return this.plugin.notes;
@@ -192,7 +193,7 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 	}
   
 	onChooseItem(item: TFile, evt: MouseEvent | KeyboardEvent) {
-	  new Notice(`Selected ${item}`);
+	  this.handler(item, evt)
 	}
   }
 
