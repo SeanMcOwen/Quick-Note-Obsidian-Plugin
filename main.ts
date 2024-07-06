@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TAbstractFile } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TAbstractFile, FuzzySuggestModal, TFile } from 'obsidian';
 
 // Remember to rename these classes and interfaces!
 
@@ -12,6 +12,7 @@ const DEFAULT_SETTINGS: MyPluginSettings = {
 
 export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
+	notes: TFile[]
 
 	async onload() {
 		await this.loadSettings();
@@ -64,6 +65,7 @@ export default class MyPlugin extends Plugin {
 				}
 			}
 		});
+		setTimeout(() => this.notes = this.getAllNotes(), 200)
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new SampleSettingTab(this.app, this));
@@ -94,6 +96,12 @@ export default class MyPlugin extends Plugin {
         }));
 	}
 
+	getAllNotes() {
+        const files = this.app.vault.getFiles();
+        const notes = files.filter(file => file.extension === "md");
+        return notes;
+    }
+
 	createNoteSilent(editor: Editor){
 		const selectedText = editor.getSelection()
 		const allFiles = this.app.vault.getAllLoadedFiles().map((x: TAbstractFile) => {return x.name.toLowerCase().replace(".md", "")})
@@ -102,7 +110,8 @@ export default class MyPlugin extends Plugin {
 	}
 
 	aliasLink(editor: Editor){
-		new AliasLinkModal(this.app, editor).open();
+		new AliasLinkModal(this.app, editor, this).open();
+		//new AliasSuggestModel(this.app).open()
 	}
 
 	async createNote(filename: string) {
@@ -125,16 +134,37 @@ export default class MyPlugin extends Plugin {
 
 class AliasLinkModal extends Modal{
 	editor: Editor
-	constructor(app: App, editor: Editor) {
+	plugin: MyPlugin
+	constructor(app: App, editor: Editor, plugin: MyPlugin) {
 		super(app);
 		this.editor = editor
+		this.plugin = plugin
 	}
 	onOpen() {
 		const {contentEl} = this;
 		contentEl.createEl("h1", { text: "Link as Alias" });
 		contentEl.createEl("p", { text: "Display Text: " + this.editor.getSelection()});
-		//Display text -> Equals the selection
-		//Alias Name -> Dropdown kind of thing for what to set the alias
+
+		new Setting(contentEl)
+      .setName("Name")
+      .addText((text) =>
+	  text.inputEl.onClickEvent(() => new AliasSuggestModel(this.app, this.plugin).open())
+        //text.onChange((value) => {
+        //  console.log(value)
+        //})
+		
+		);
+
+		new Setting(contentEl)
+		.addButton((btn) =>
+			btn
+			.setButtonText("Submit")
+			.setCta()
+			.onClick(() => {
+				console.log("Close")
+				this.close();
+				//this.onSubmit(this.result);
+			}));
 
 	}
 
@@ -143,6 +173,28 @@ class AliasLinkModal extends Modal{
 		contentEl.empty();
 	}
 }
+
+const ALL_OPTIONS = ["A", "B", "C", "AA", "BB", "CC"]
+
+export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
+	plugin: MyPlugin
+	constructor(app: App, plugin: MyPlugin) {
+		super(app);
+		this.plugin = plugin
+		console.log(plugin.notes)
+	}
+	getItems(): TFile[] {
+	  return this.plugin.notes;
+	}
+  
+	getItemText(item: TFile): string {
+	  return item.basename;
+	}
+  
+	onChooseItem(item: TFile, evt: MouseEvent | KeyboardEvent) {
+	  new Notice(`Selected ${item}`);
+	}
+  }
 
 class SampleModal extends Modal {
 	constructor(app: App) {
