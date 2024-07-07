@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TAbstractFile, FuzzySuggestModal, TFile } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TAbstractFile, FuzzySuggestModal, TFile, TextComponent } from 'obsidian';
 
 // Remember to rename these classes and interfaces!
 
@@ -134,6 +134,7 @@ export default class MyPlugin extends Plugin {
 class AliasLinkModal extends Modal{
 	editor: Editor
 	plugin: MyPlugin
+	aliasItem: TFile
 	constructor(app: App, editor: Editor, plugin: MyPlugin) {
 		super(app);
 		this.editor = editor
@@ -144,12 +145,13 @@ class AliasLinkModal extends Modal{
 		contentEl.createEl("h1", { text: "Link as Alias" });
 		contentEl.createEl("p", { text: "Display Text: " + this.editor.getSelection()});
 
-		const handler = (item: TFile, evt: MouseEvent | KeyboardEvent) => {console.log(item)}
+		const handler = (item: TFile, evt: MouseEvent | KeyboardEvent) => {this.aliasItem=item}
 
 		new Setting(contentEl)
       .setName("Name")
       .addText((text) =>
-	  text.inputEl.onClickEvent(() => new AliasSuggestModel(this.app, this.plugin, handler).open())
+	  
+	  text.inputEl.onClickEvent(() => new AliasSuggestModel(this.app, this.plugin, handler, text).open())
         //text.onChange((value) => {
         //  console.log(value)
         //})
@@ -170,6 +172,7 @@ class AliasLinkModal extends Modal{
 	}
 
 	onClose() {
+		console.log(this.aliasItem)
 		const {contentEl} = this;
 		contentEl.empty();
 	}
@@ -178,11 +181,13 @@ class AliasLinkModal extends Modal{
 
 export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 	plugin: MyPlugin
+	textComponent: TextComponent
 	handler: (item: TFile, evt: MouseEvent | KeyboardEvent) => void
-	constructor(app: App, plugin: MyPlugin, handler: (item: TFile, evt: MouseEvent | KeyboardEvent) => void) {
+	constructor(app: App, plugin: MyPlugin, handler: (item: TFile, evt: MouseEvent | KeyboardEvent) => void, text: TextComponent) {
 		super(app);
 		this.plugin = plugin
 		this.handler = handler
+		this.textComponent = text
 	}
 	getItems(): TFile[] {
 	  return this.plugin.notes;
@@ -194,6 +199,7 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
   
 	onChooseItem(item: TFile, evt: MouseEvent | KeyboardEvent) {
 	  this.handler(item, evt)
+	  this.textComponent.setValue(item.basename)
 	}
   }
 
