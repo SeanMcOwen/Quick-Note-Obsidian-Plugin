@@ -164,9 +164,9 @@ class AliasLinkModal extends Modal{
 			.setButtonText("Submit")
 			.setCta()
 			.onClick(() => {
-				console.log("Close")
+				const selectedText = this.editor.getSelection()
+				this.editor.replaceSelection("[[" + this.aliasItem.path.replace(".md","")+"|"+ selectedText + "]]")
 				this.close();
-				//this.onSubmit(this.result);
 			}));
 
 	}
