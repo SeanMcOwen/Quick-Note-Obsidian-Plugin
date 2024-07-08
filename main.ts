@@ -194,12 +194,12 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 	}
   
 	getItemText(item: TFile): string {
-	  return item.basename;
+	  return item.path.replace(".md","");
 	}
   
 	onChooseItem(item: TFile, evt: MouseEvent | KeyboardEvent) {
 	  this.handler(item, evt)
-	  this.textComponent.setValue(item.basename)
+	  this.textComponent.setValue(item.path.replace(".md",""))
 	}
   }
 
