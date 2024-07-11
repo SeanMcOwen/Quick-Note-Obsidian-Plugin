@@ -166,14 +166,24 @@ class AliasLinkModal extends Modal{
 			.onClick(() => {
 				const selectedText = this.editor.getSelection()
 				this.editor.replaceSelection("[[" + this.aliasItem.path.replace(".md","")+"|"+ selectedText + "]]")
-				this.app.fileManager.processFrontMatter(this.aliasItem, (frontMatter) => {console.log(frontMatter)})
+				this.addAlias(selectedText)
 				this.close();
 			}));
 
 	}
+	async addAlias(displayName: string){
+		await this.app.fileManager.processFrontMatter(this.aliasItem, (frontMatter) => { const aliases = frontMatter.aliases
+			if(aliases === undefined){
+				frontMatter.aliases = [displayName]
+			}
+			else{
+				if (!aliases.map((x: string) => x.toLowerCase()).contains(displayName.toLowerCase())){
+					frontMatter.aliases = [...aliases, displayName]
+				}
+			}})
+	}
 
 	onClose() {
-		console.log(this.aliasItem)
 		const {contentEl} = this;
 		contentEl.empty();
 	}
