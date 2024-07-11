@@ -148,7 +148,7 @@ class AliasLinkModal extends Modal{
 		const handler = (item: TFile, evt: MouseEvent | KeyboardEvent) => {this.aliasItem=item}
 
 		new Setting(contentEl)
-      .setName("Name")
+      .setName("Alias")
       .addText((text) =>
 	  
 	  text.inputEl.onClickEvent(() => new AliasSuggestModel(this.app, this.plugin, handler, text).open())
@@ -166,6 +166,7 @@ class AliasLinkModal extends Modal{
 			.onClick(() => {
 				const selectedText = this.editor.getSelection()
 				this.editor.replaceSelection("[[" + this.aliasItem.path.replace(".md","")+"|"+ selectedText + "]]")
+				this.app.fileManager.processFrontMatter(this.aliasItem, (frontMatter) => {console.log(frontMatter)})
 				this.close();
 			}));
 
