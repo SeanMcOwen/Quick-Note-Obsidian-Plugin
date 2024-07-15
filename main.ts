@@ -166,7 +166,7 @@ class AliasLinkModal extends Modal{
 			.onClick(() => {
 				const selectedText = this.editor.getSelection()
 				this.editor.replaceSelection("[[" + this.aliasItem.path.replace(".md","")+"|"+ selectedText + "]]")
-				this.addAlias(selectedText)
+				if (this.addAliasBool){this.addAlias(selectedText)}
 				this.close();
 			}));
 
