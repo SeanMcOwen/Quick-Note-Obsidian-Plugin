@@ -151,11 +151,14 @@ class AliasLinkModal extends Modal{
 		const handler = (item: TFile, evt: MouseEvent | KeyboardEvent) => {this.aliasItem=item}
 
 		new Setting(contentEl).setName("Alias").addText((text) =>
-		text.inputEl.onClickEvent(() => new AliasSuggestModel(this.app, this.plugin, handler, text).open())
-        //text.onChange((value) => {
-        //  console.log(value)
-        //})
-		
+		{
+			text.inputEl.onClickEvent(() => new AliasSuggestModel(this.app, this.plugin, handler, text).open())
+			text.onChange((value) => {
+				console.log(value)
+				console.log(this.plugin.notes)
+				})
+		}
+
 		);
 
 		new Setting(contentEl)
