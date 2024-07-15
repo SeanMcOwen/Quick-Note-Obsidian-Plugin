@@ -115,7 +115,8 @@ export default class MyPlugin extends Plugin {
 
 	async createNote(filename: string) {
 		const fileName = filename+".md";
-		const file = await this.app.vault.create(fileName, '');
+		await this.app.vault.create(fileName, '');
+		//const file = await this.app.vault.create(fileName, '');
 	}
 
 	onunload() {
@@ -135,10 +136,12 @@ class AliasLinkModal extends Modal{
 	editor: Editor
 	plugin: MyPlugin
 	aliasItem: TFile
+	addAliasBool: boolean
 	constructor(app: App, editor: Editor, plugin: MyPlugin) {
 		super(app);
 		this.editor = editor
 		this.plugin = plugin
+		this.addAliasBool = true
 	}
 	onOpen() {
 		const {contentEl} = this;
@@ -147,11 +150,8 @@ class AliasLinkModal extends Modal{
 
 		const handler = (item: TFile, evt: MouseEvent | KeyboardEvent) => {this.aliasItem=item}
 
-		new Setting(contentEl)
-      .setName("Alias")
-      .addText((text) =>
-	  
-	  text.inputEl.onClickEvent(() => new AliasSuggestModel(this.app, this.plugin, handler, text).open())
+		new Setting(contentEl).setName("Alias").addText((text) =>
+		text.inputEl.onClickEvent(() => new AliasSuggestModel(this.app, this.plugin, handler, text).open())
         //text.onChange((value) => {
         //  console.log(value)
         //})
@@ -169,6 +169,16 @@ class AliasLinkModal extends Modal{
 				this.addAlias(selectedText)
 				this.close();
 			}));
+
+			new Setting(contentEl)
+            .setName('Add Display Name as Alias')
+            .addToggle(toggle => {
+				this.addAliasBool = toggle.getValue()
+
+                toggle.onChange(value => {
+                    this.addAliasBool = value
+                });
+            });
 
 	}
 	async addAlias(displayName: string){
@@ -201,16 +211,16 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 		this.textComponent = text
 	}
 	getItems(): TFile[] {
-	  return this.plugin.notes;
+		return this.plugin.notes;
 	}
   
 	getItemText(item: TFile): string {
-	  return item.path.replace(".md","");
+		return item.path.replace(".md","");
 	}
   
 	onChooseItem(item: TFile, evt: MouseEvent | KeyboardEvent) {
-	  this.handler(item, evt)
-	  this.textComponent.setValue(item.path.replace(".md",""))
+		this.handler(item, evt)
+		this.textComponent.setValue(item.path.replace(".md",""))
 	}
   }
 
