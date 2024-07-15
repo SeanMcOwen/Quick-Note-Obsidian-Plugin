@@ -164,10 +164,16 @@ class AliasLinkModal extends Modal{
 			.setButtonText("Submit")
 			.setCta()
 			.onClick(() => {
-				const selectedText = this.editor.getSelection()
-				this.editor.replaceSelection("[[" + this.aliasItem.path.replace(".md","")+"|"+ selectedText + "]]")
-				if (this.addAliasBool){this.addAlias(selectedText)}
-				this.close();
+				if(this.aliasItem){
+					const selectedText = this.editor.getSelection()
+					this.editor.replaceSelection("[[" + this.aliasItem.path.replace(".md","")+"|"+ selectedText + "]]")
+					if (this.addAliasBool){this.addAlias(selectedText)}
+					this.close();
+				}
+				else{
+					alert("Invalid alias!")
+				}
+				
 			}));
 
 			new Setting(contentEl)
