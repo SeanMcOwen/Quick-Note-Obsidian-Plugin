@@ -135,7 +135,7 @@ export default class MyPlugin extends Plugin {
 class AliasLinkModal extends Modal{
 	editor: Editor
 	plugin: MyPlugin
-	aliasItem: TFile
+	aliasItem: TFile | undefined
 	addAliasBool: boolean
 	constructor(app: App, editor: Editor, plugin: MyPlugin) {
 		super(app);
@@ -154,8 +154,13 @@ class AliasLinkModal extends Modal{
 		{
 			text.inputEl.onClickEvent(() => new AliasSuggestModel(this.app, this.plugin, handler, text).open())
 			text.onChange((value) => {
-				console.log(value)
-				console.log(this.plugin.notes)
+				const opt = this.plugin.notes.filter((v) => v.path.toLowerCase().replace(".md","") === value.toLowerCase())
+				if (opt.length == 0){
+					this.aliasItem = undefined
+				}
+				else {
+					this.aliasItem = opt[0]
+				}
 				})
 		}
 
@@ -170,7 +175,7 @@ class AliasLinkModal extends Modal{
 				if(this.aliasItem){
 					const selectedText = this.editor.getSelection()
 					this.editor.replaceSelection("[[" + this.aliasItem.path.replace(".md","")+"|"+ selectedText + "]]")
-					if (this.addAliasBool){this.addAlias(selectedText)}
+					if (this.addAliasBool && this.aliasItem !== undefined){this.addAlias(selectedText)}
 					this.close();
 				}
 				else{
@@ -191,7 +196,8 @@ class AliasLinkModal extends Modal{
 
 	}
 	async addAlias(displayName: string){
-		await this.app.fileManager.processFrontMatter(this.aliasItem, (frontMatter) => { const aliases = frontMatter.aliases
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		await this.app.fileManager.processFrontMatter(this.aliasItem!, (frontMatter) => { const aliases = frontMatter.aliases
 			if(aliases === undefined){
 				frontMatter.aliases = [displayName]
 			}
