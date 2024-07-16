@@ -145,6 +145,9 @@ class AliasLinkModal extends Modal{
 	}
 	onOpen() {
 		const {contentEl} = this;
+		this.plugin.notes = this.plugin.getAllNotes()
+		//setTimeout(() => this.plugin.notes = this.plugin.getAllNotes(), 100)
+		
 		contentEl.createEl("h1", { text: "Link as Alias" });
 		contentEl.createEl("p", { text: "Display Text: " + this.editor.getSelection()});
 
