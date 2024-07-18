@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TAbstractFile } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TAbstractFile, FuzzySuggestModal, TFile, TextComponent } from 'obsidian';
 
 // Remember to rename these classes and interfaces!
 
@@ -12,6 +12,7 @@ const DEFAULT_SETTINGS: MyPluginSettings = {
 
 export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
+	notes: TFile[]
 
 	async onload() {
 		await this.loadSettings();
@@ -64,6 +65,7 @@ export default class MyPlugin extends Plugin {
 				}
 			}
 		});
+		setTimeout(() => this.notes = this.getAllNotes(), 200)
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new SampleSettingTab(this.app, this));
@@ -80,11 +82,25 @@ export default class MyPlugin extends Plugin {
 		this.registerEvent(this.app.workspace.on('editor-menu', (menu, editor, view) => {
             menu.addItem(item => {
                 item.setTitle('Silently Create Note');
-                item.setIcon('pencil'); // Set an icon for the menu item
+                item.setIcon('pencil'); 
                 item.onClick(() => this.createNoteSilent(editor));
             });
         }));
+
+		this.registerEvent(this.app.workspace.on('editor-menu', (menu, editor, view) => {
+            menu.addItem(item => {
+                item.setTitle('Link to Note as Alias');
+                item.setIcon('pencil');
+                item.onClick(() => this.aliasLink(editor));
+            });
+        }));
 	}
+
+	getAllNotes() {
+        const files = this.app.vault.getFiles();
+        const notes = files.filter(file => file.extension === "md");
+        return notes;
+    }
 
 	createNoteSilent(editor: Editor){
 		const selectedText = editor.getSelection()
@@ -93,9 +109,14 @@ export default class MyPlugin extends Plugin {
 		editor.replaceSelection("[[" + selectedText + "]]")
 	}
 
+	aliasLink(editor: Editor){
+		new AliasLinkModal(this.app, editor, this).open();
+	}
+
 	async createNote(filename: string) {
 		const fileName = filename+".md";
-		const file = await this.app.vault.create(fileName, '');
+		await this.app.vault.create(fileName, '');
+		//const file = await this.app.vault.create(fileName, '');
 	}
 
 	onunload() {
@@ -110,6 +131,126 @@ export default class MyPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 }
+
+class AliasLinkModal extends Modal{
+	editor: Editor
+	plugin: MyPlugin
+	aliasItem: TFile | undefined
+	addAliasBool: boolean
+	displayName: string
+	constructor(app: App, editor: Editor, plugin: MyPlugin) {
+		super(app);
+		this.editor = editor
+		this.plugin = plugin
+		this.addAliasBool = true
+	}
+	onOpen() {
+		const {contentEl} = this;
+		this.plugin.notes = this.plugin.getAllNotes()
+		//setTimeout(() => this.plugin.notes = this.plugin.getAllNotes(), 100)
+		
+		contentEl.createEl("h1", { text: "Link as Alias" });
+
+		this.displayName = this.editor.getSelection()
+
+		new Setting(contentEl).setName("Display Text:").addText((text) =>
+			{
+				text.setValue(this.displayName)
+				text.onChange((value) => {this.displayName=value})
+			}
+	
+			);
+
+		const handler = (item: TFile, evt: MouseEvent | KeyboardEvent) => {this.aliasItem=item}
+
+		new Setting(contentEl).setName("Alias").addText((text) =>
+		{
+			text.inputEl.onClickEvent(() => new AliasSuggestModel(this.app, this.plugin, handler, text).open())
+			text.onChange((value) => {
+				const opt = this.plugin.notes.filter((v) => v.path.toLowerCase().replace(".md","") === value.toLowerCase())
+				if (opt.length == 0){
+					this.aliasItem = undefined
+				}
+				else {
+					this.aliasItem = opt[0]
+				}
+				})
+		}
+
+		);
+
+		new Setting(contentEl)
+		.addButton((btn) =>
+			btn
+			.setButtonText("Submit")
+			.setCta()
+			.onClick(() => {
+				if(this.aliasItem){
+					const selectedText = this.displayName
+					this.editor.replaceSelection("[[" + this.aliasItem.path.replace(".md","")+"|"+ selectedText + "]]")
+					if (this.addAliasBool && this.aliasItem !== undefined){this.addAlias(selectedText)}
+					this.close();
+				}
+				else{
+					alert("Invalid alias!")
+				}
+				
+			}));
+
+			new Setting(contentEl)
+            .setName('Add Display Name as Alias')
+            .addToggle(toggle => {
+				this.addAliasBool = toggle.getValue()
+
+                toggle.onChange(value => {
+                    this.addAliasBool = value
+                });
+            });
+
+	}
+	async addAlias(displayName: string){
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		await this.app.fileManager.processFrontMatter(this.aliasItem!, (frontMatter) => { const aliases = frontMatter.aliases
+			if(aliases === undefined){
+				frontMatter.aliases = [displayName]
+			}
+			else{
+				if (!aliases.map((x: string) => x.toLowerCase()).contains(displayName.toLowerCase())){
+					frontMatter.aliases = [...aliases, displayName]
+				}
+			}})
+	}
+
+	onClose() {
+		const {contentEl} = this;
+		contentEl.empty();
+	}
+}
+
+
+export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
+	plugin: MyPlugin
+	textComponent: TextComponent
+	handler: (item: TFile, evt: MouseEvent | KeyboardEvent) => void
+	constructor(app: App, plugin: MyPlugin, handler: (item: TFile, evt: MouseEvent | KeyboardEvent) => void, text: TextComponent) {
+		super(app);
+		this.plugin = plugin
+		this.handler = handler
+		this.textComponent = text
+	}
+	getItems(): TFile[] {
+		return this.plugin.notes;
+	}
+  
+	getItemText(item: TFile): string {
+		return item.path.replace(".md","");
+	}
+  
+	onChooseItem(item: TFile, evt: MouseEvent | KeyboardEvent) {
+		this.handler(item, evt)
+		this.textComponent.setValue(item.path.replace(".md",""))
+	}
+  }
 
 class SampleModal extends Modal {
 	constructor(app: App) {
