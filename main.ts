@@ -137,6 +137,7 @@ class AliasLinkModal extends Modal{
 	plugin: MyPlugin
 	aliasItem: TFile | undefined
 	addAliasBool: boolean
+	displayName: string
 	constructor(app: App, editor: Editor, plugin: MyPlugin) {
 		super(app);
 		this.editor = editor
@@ -149,7 +150,16 @@ class AliasLinkModal extends Modal{
 		//setTimeout(() => this.plugin.notes = this.plugin.getAllNotes(), 100)
 		
 		contentEl.createEl("h1", { text: "Link as Alias" });
-		contentEl.createEl("p", { text: "Display Text: " + this.editor.getSelection()});
+
+		this.displayName = this.editor.getSelection()
+
+		new Setting(contentEl).setName("Display Text:").addText((text) =>
+			{
+				text.setValue(this.displayName)
+				text.onChange((value) => {this.displayName=value})
+			}
+	
+			);
 
 		const handler = (item: TFile, evt: MouseEvent | KeyboardEvent) => {this.aliasItem=item}
 
@@ -176,7 +186,7 @@ class AliasLinkModal extends Modal{
 			.setCta()
 			.onClick(() => {
 				if(this.aliasItem){
-					const selectedText = this.editor.getSelection()
+					const selectedText = this.displayName
 					this.editor.replaceSelection("[[" + this.aliasItem.path.replace(".md","")+"|"+ selectedText + "]]")
 					if (this.addAliasBool && this.aliasItem !== undefined){this.addAlias(selectedText)}
 					this.close();
