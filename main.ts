@@ -43,6 +43,7 @@ export default class MyPlugin extends Plugin {
 				return aliasNames
 			}).flat();
 			aliases = [... new Set(aliases)]
+
 			console.log(aliases)
 
 			const cache = this.app.metadataCache.getFileCache(activeFile)
@@ -58,7 +59,9 @@ export default class MyPlugin extends Plugin {
 			else {
 				oldAliases = cache.frontmatter.aliases
 			}
-			console.log(oldAliases)
+			oldAliases = oldAliases.map((x)=> x.toLowerCase())
+			const newAliases = aliases.filter((x) => !(oldAliases.contains(x!.toLowerCase())))
+			console.log(newAliases)
 		});
 
 		// Perform additional things with the ribbon
