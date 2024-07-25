@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TAbstractFile, FuzzySuggestModal, TFile, TextComponent } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Plugin, PluginSettingTab, Setting, TAbstractFile, FuzzySuggestModal, TFile, TextComponent } from 'obsidian';
 
 // Remember to rename these classes and interfaces!
 
@@ -19,9 +19,48 @@ export default class MyPlugin extends Plugin {
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
+			const activeFile = this.app.workspace.getActiveFile()
+			if (!activeFile) {
+				console.log('No active file found.');
+				return;
+			}
+
+
+			const linkedFiles = Object.entries(this.app.metadataCache.resolvedLinks).filter(([_, value]) => Object.keys(value).contains(activeFile.name)).map(([key, _]) => key)
+			
+			
+			let aliases = linkedFiles.map( (file) => {
+				const cache = this.app.metadataCache.getCache(file)
+				if (!cache){
+					return
+				}
+				let cacheLinks = cache.links
+				if (!cacheLinks){
+					return
+				}
+				cacheLinks = cacheLinks.filter((l) => l.link.toLowerCase() == activeFile.basename.toLowerCase())
+				const aliasNames = cacheLinks.map((x) => x.displayText)
+				return aliasNames
+			}).flat();
+			aliases = [... new Set(aliases)]
+			console.log(aliases)
+
+			const cache = this.app.metadataCache.getFileCache(activeFile)
+
+			if (!cache){
+				console.log('No cache');
+				return;
+			}
+			let oldAliases: string[] = []
+			if (!cache.frontmatter || !cache.frontmatter.aliases){
+				console.log('No aliases for the cache');
+			}
+			else {
+				oldAliases = cache.frontmatter.aliases
+			}
+			console.log(oldAliases)
 		});
+
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
 
