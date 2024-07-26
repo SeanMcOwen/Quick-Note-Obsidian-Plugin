@@ -44,7 +44,6 @@ export default class MyPlugin extends Plugin {
 			}).flat();
 			aliases = [... new Set(aliases)]
 
-			console.log(aliases)
 
 			const cache = this.app.metadataCache.getFileCache(activeFile)
 
@@ -60,8 +59,10 @@ export default class MyPlugin extends Plugin {
 				oldAliases = cache.frontmatter.aliases
 			}
 			oldAliases = oldAliases.map((x)=> x.toLowerCase())
-			const newAliases = aliases.filter((x) => !(oldAliases.contains(x!.toLowerCase())))
+			const newAliases = aliases.filter((item): item is string => item !== undefined).filter((x) => !(oldAliases.contains(x.toLowerCase())))
 			console.log(newAliases)
+
+			new UnusedAliasModal(this.app, activeFile, newAliases).open();
 		});
 
 		// Perform additional things with the ribbon
@@ -293,6 +294,24 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 		this.textComponent.setValue(item.path.replace(".md",""))
 	}
   }
+
+class UnusedAliasModal extends Modal {
+	constructor(app: App, activeFile: TFile, newAliases: string[]) {
+		super(app);
+	}
+
+	onOpen() {
+		const {contentEl} = this;
+		contentEl.setText('Woah!');
+	}
+
+	onClose() {
+		const {contentEl} = this;
+		contentEl.empty();
+	}
+}
+
+
 
 class SampleModal extends Modal {
 	constructor(app: App) {
