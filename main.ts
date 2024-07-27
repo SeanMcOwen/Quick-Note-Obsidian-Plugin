@@ -296,13 +296,27 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
   }
 
 class UnusedAliasModal extends Modal {
+	activeFile: TFile
+	newAliases: string[]
+
 	constructor(app: App, activeFile: TFile, newAliases: string[]) {
 		super(app);
+		this.activeFile = activeFile
+		this.newAliases = newAliases
 	}
 
 	onOpen() {
 		const {contentEl} = this;
-		contentEl.setText('Woah!');
+
+		new Setting(contentEl).setName("Alias 1")
+		.addButton((btn) =>
+			btn
+			.setButtonText("Add Alias")
+			.setCta()
+			.onClick(() => {
+				console.log("A")
+			}));
+
 	}
 
 	onClose() {
