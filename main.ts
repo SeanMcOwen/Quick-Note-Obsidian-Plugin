@@ -308,14 +308,16 @@ class UnusedAliasModal extends Modal {
 	onOpen() {
 		const {contentEl} = this;
 
-		new Setting(contentEl).setName("Alias 1")
+		contentEl.createEl("h1", { text: "Potential Aliases ("+this.newAliases.length.toString()+")" });
+		this.newAliases.map((alias) => new Setting(contentEl).setName(alias)
 		.addButton((btn) =>
 			btn
 			.setButtonText("Add Alias")
 			.setCta()
 			.onClick(() => {
 				console.log("A")
-			}));
+			})))
+		
 
 	}
 
