@@ -315,7 +315,8 @@ class UnusedAliasModal extends Modal {
 			.setButtonText("Add Alias")
 			.setCta()
 			.onClick(() => {
-				console.log("A")
+				btn.setDisabled(true)
+				this.addAlias(alias)
 			})))
 		
 
@@ -324,6 +325,19 @@ class UnusedAliasModal extends Modal {
 	onClose() {
 		const {contentEl} = this;
 		contentEl.empty();
+	}
+
+	async addAlias(alias: string){
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		await this.app.fileManager.processFrontMatter(this.activeFile, (frontMatter) => { const aliases = frontMatter.aliases
+			if(aliases === undefined){
+				frontMatter.aliases = [alias]
+			}
+			else{
+				if (!aliases.map((x: string) => x.toLowerCase()).contains(alias.toLowerCase())){
+					frontMatter.aliases = [...aliases, alias]
+				}
+			}})
 	}
 }
 
