@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TAbstractFile, FuzzySuggestModal, TFile, TextComponent } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Plugin, PluginSettingTab, Setting, TAbstractFile, FuzzySuggestModal, TFile, TextComponent } from 'obsidian';
 
 // Remember to rename these classes and interfaces!
 
@@ -18,10 +18,53 @@ export default class MyPlugin extends Plugin {
 		await this.loadSettings();
 
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
+		const ribbonIconEl = this.addRibbonIcon('merge', 'Find Possible Aliases', (evt: MouseEvent) => {
+			const activeFile = this.app.workspace.getActiveFile()
+			if (!activeFile) {
+				console.log('No active file found.');
+				return;
+			}
+
+
+			const linkedFiles = Object.entries(this.app.metadataCache.resolvedLinks).filter(([_, value]) => Object.keys(value).contains(activeFile.name)).map(([key, _]) => key)
+			
+			
+			let aliases = linkedFiles.map( (file) => {
+				const cache = this.app.metadataCache.getCache(file)
+				if (!cache){
+					return
+				}
+				let cacheLinks = cache.links
+				if (!cacheLinks){
+					return
+				}
+				cacheLinks = cacheLinks.filter((l) => l.link.toLowerCase() == activeFile.basename.toLowerCase())
+				const aliasNames = cacheLinks.map((x) => x.displayText)
+				return aliasNames
+			}).flat();
+			aliases = [... new Set(aliases)]
+
+
+			const cache = this.app.metadataCache.getFileCache(activeFile)
+
+			if (!cache){
+				console.log('No cache');
+				return;
+			}
+			let oldAliases: string[] = []
+			if (!cache.frontmatter || !cache.frontmatter.aliases){
+				console.log('No aliases for the cache');
+			}
+			else {
+				oldAliases = cache.frontmatter.aliases
+			}
+			oldAliases = oldAliases.map((x)=> x.toLowerCase())
+			const newAliases = aliases.filter((item): item is string => item !== undefined).filter((x) => !(oldAliases.contains(x.toLowerCase())))
+			console.log(newAliases)
+
+			new UnusedAliasModal(this.app, activeFile, newAliases).open();
 		});
+
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
 
@@ -251,6 +294,54 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 		this.textComponent.setValue(item.path.replace(".md",""))
 	}
   }
+
+class UnusedAliasModal extends Modal {
+	activeFile: TFile
+	newAliases: string[]
+
+	constructor(app: App, activeFile: TFile, newAliases: string[]) {
+		super(app);
+		this.activeFile = activeFile
+		this.newAliases = newAliases
+	}
+
+	onOpen() {
+		const {contentEl} = this;
+
+		contentEl.createEl("h1", { text: "Potential Aliases ("+this.newAliases.length.toString()+")" });
+		this.newAliases.map((alias) => new Setting(contentEl).setName(alias)
+		.addButton((btn) =>
+			btn
+			.setButtonText("Add Alias")
+			.setCta()
+			.onClick(() => {
+				btn.setDisabled(true)
+				this.addAlias(alias)
+			})))
+		
+
+	}
+
+	onClose() {
+		const {contentEl} = this;
+		contentEl.empty();
+	}
+
+	async addAlias(alias: string){
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		await this.app.fileManager.processFrontMatter(this.activeFile, (frontMatter) => { const aliases = frontMatter.aliases
+			if(aliases === undefined){
+				frontMatter.aliases = [alias]
+			}
+			else{
+				if (!aliases.map((x: string) => x.toLowerCase()).contains(alias.toLowerCase())){
+					frontMatter.aliases = [...aliases, alias]
+				}
+			}})
+	}
+}
+
+
 
 class SampleModal extends Modal {
 	constructor(app: App) {
