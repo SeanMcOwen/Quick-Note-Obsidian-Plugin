@@ -18,7 +18,7 @@ export default class MyPlugin extends Plugin {
 		await this.loadSettings();
 
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
+		const ribbonIconEl = this.addRibbonIcon('merge', 'Find Possible Aliases', (evt: MouseEvent) => {
 			const activeFile = this.app.workspace.getActiveFile()
 			if (!activeFile) {
 				console.log('No active file found.');
