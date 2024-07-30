@@ -17,7 +17,6 @@ export default class MyPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('merge', 'Find Possible Aliases', (evt: MouseEvent) => {
 			const activeFile = this.app.workspace.getActiveFile()
 			if (!activeFile) {
@@ -64,6 +63,10 @@ export default class MyPlugin extends Plugin {
 
 			new UnusedAliasModal(this.app, activeFile, newAliases).open();
 		});
+
+		this.addRibbonIcon('dice', 'Solidify Links', (evt: MouseEvent) => {
+			new SolidifyLinkModal(this.app).open()
+		})
 
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
@@ -338,6 +341,22 @@ class UnusedAliasModal extends Modal {
 					frontMatter.aliases = [...aliases, alias]
 				}
 			}})
+	}
+}
+
+class SolidifyLinkModal extends Modal {
+	constructor(app: App) {
+		super(app);
+	}
+
+	onOpen() {
+		const {contentEl} = this;
+		contentEl.setText('Woah!');
+	}
+
+	onClose() {
+		const {contentEl} = this;
+		contentEl.empty();
 	}
 }
 
