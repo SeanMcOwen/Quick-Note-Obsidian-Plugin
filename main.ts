@@ -65,7 +65,9 @@ export default class MyPlugin extends Plugin {
 		});
 
 		this.addRibbonIcon('dice', 'Solidify Links', (evt: MouseEvent) => {
-			new SolidifyLinkModal(this.app).open()
+			const activeFile = this.app.workspace.getActiveFile()
+			if (activeFile){new SolidifyLinkModal(this.app, activeFile).open()}
+			
 		})
 
 		// Perform additional things with the ribbon
@@ -345,13 +347,16 @@ class UnusedAliasModal extends Modal {
 }
 
 class SolidifyLinkModal extends Modal {
-	constructor(app: App) {
+	activeFile: TFile
+	constructor(app: App, activeFile: TFile) {
 		super(app);
+		this.activeFile = activeFile
 	}
 
 	onOpen() {
 		const {contentEl} = this;
-		contentEl.setText('Woah!');
+		const name = this.activeFile.name.replace(".md","")
+		contentEl.createEl("p", { text: `Are you sure you want to solidify links for ${name}? This will change all links to be of the form [[${name}|DisplayName]] so that changing this file name won't change their display name.` });
 	}
 
 	onClose() {
