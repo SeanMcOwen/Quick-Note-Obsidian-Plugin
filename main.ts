@@ -382,9 +382,10 @@ class SolidifyLinkModal extends Modal {
 			.setButtonText("Confirm")
 			.setCta()
 			.onClick(() => {
-				this.linkedFiles.map( (file) => {
+				this.linkedFiles.map( async (file) => {
 				const cache = this.app.metadataCache.getCache(file)
-				if (!cache){
+				const currentFile = this.app.vault.getFileByPath(file)
+				if (!cache || !currentFile){
 					return
 				}
 				let cacheLinks = cache.links
@@ -393,7 +394,15 @@ class SolidifyLinkModal extends Modal {
 				}
 				cacheLinks = cacheLinks.filter((l) => l.link.toLowerCase() == this.activeFile.basename.toLowerCase())
 				cacheLinks = cacheLinks.filter((l)=> !(l.original.contains("|")))
-				console.log(cacheLinks)
+				let cacheLinks2: string[][] = cacheLinks.map((l) => [l.original, l.link, l.displayText ?l.displayText: l.link])
+				cacheLinks2 = [... new Set(cacheLinks2)]
+				
+				let fileContent = await this.app.vault.read(currentFile);
+
+				cacheLinks2.forEach((l) => fileContent = fileContent.replace(l[0], "[["+l[1]+"|"+l[2]+"]]"))
+
+				await this.app.vault.modify(currentFile, fileContent);
+				
 			});
 
 				this.close();
