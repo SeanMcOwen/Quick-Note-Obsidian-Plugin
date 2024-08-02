@@ -66,7 +66,23 @@ export default class MyPlugin extends Plugin {
 
 		this.addRibbonIcon('dice', 'Solidify Links', (evt: MouseEvent) => {
 			const activeFile = this.app.workspace.getActiveFile()
-			if (activeFile){new SolidifyLinkModal(this.app, activeFile).open()}
+
+			if (!activeFile) {
+				console.log('No active file found.');
+				return;
+			}
+
+
+			const linkedFiles = Object.entries(this.app.metadataCache.resolvedLinks).filter(([_, value]) => Object.keys(value).contains(activeFile.name)).map(([key, _]) => key)
+
+
+
+			
+
+
+
+
+			if (activeFile){new SolidifyLinkModal(this.app, activeFile, linkedFiles).open()}
 			
 		})
 
@@ -348,15 +364,40 @@ class UnusedAliasModal extends Modal {
 
 class SolidifyLinkModal extends Modal {
 	activeFile: TFile
-	constructor(app: App, activeFile: TFile) {
+	linkedFiles: string[]
+
+	constructor(app: App, activeFile: TFile, linkedFiles: string[]) {
 		super(app);
 		this.activeFile = activeFile
+		this.linkedFiles = linkedFiles
 	}
 
 	onOpen() {
 		const {contentEl} = this;
 		const name = this.activeFile.name.replace(".md","")
 		contentEl.createEl("p", { text: `Are you sure you want to solidify links for ${name}? This will change all links to be of the form [[${name}|DisplayName]] so that changing this file name won't change their display name.` });
+		new Setting(contentEl)
+		.addButton((btn) =>
+			btn
+			.setButtonText("Confirm")
+			.setCta()
+			.onClick(() => {
+				this.linkedFiles.map( (file) => {
+				const cache = this.app.metadataCache.getCache(file)
+				if (!cache){
+					return
+				}
+				let cacheLinks = cache.links
+				if (!cacheLinks){
+					return
+				}
+				cacheLinks = cacheLinks.filter((l) => l.link.toLowerCase() == this.activeFile.basename.toLowerCase())
+				cacheLinks = cacheLinks.filter((l)=> !(l.original.contains("|")))
+				console.log(cacheLinks)
+			});
+
+				this.close();
+			}));
 	}
 
 	onClose() {
