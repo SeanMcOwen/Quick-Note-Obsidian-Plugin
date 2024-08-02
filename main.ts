@@ -64,7 +64,7 @@ export default class MyPlugin extends Plugin {
 			new UnusedAliasModal(this.app, activeFile, newAliases).open();
 		});
 
-		this.addRibbonIcon('dice', 'Solidify Links', (evt: MouseEvent) => {
+		this.addRibbonIcon('shield', 'Solidify Links', (evt: MouseEvent) => {
 			const activeFile = this.app.workspace.getActiveFile()
 
 			if (!activeFile) {
