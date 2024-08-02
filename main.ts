@@ -17,7 +17,6 @@ export default class MyPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('merge', 'Find Possible Aliases', (evt: MouseEvent) => {
 			const activeFile = this.app.workspace.getActiveFile()
 			if (!activeFile) {
@@ -64,6 +63,28 @@ export default class MyPlugin extends Plugin {
 
 			new UnusedAliasModal(this.app, activeFile, newAliases).open();
 		});
+
+		this.addRibbonIcon('shield', 'Solidify Links', (evt: MouseEvent) => {
+			const activeFile = this.app.workspace.getActiveFile()
+
+			if (!activeFile) {
+				console.log('No active file found.');
+				return;
+			}
+
+
+			const linkedFiles = Object.entries(this.app.metadataCache.resolvedLinks).filter(([_, value]) => Object.keys(value).contains(activeFile.name)).map(([key, _]) => key)
+
+
+
+			
+
+
+
+
+			if (activeFile){new SolidifyLinkModal(this.app, activeFile, linkedFiles).open()}
+			
+		})
 
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
@@ -338,6 +359,59 @@ class UnusedAliasModal extends Modal {
 					frontMatter.aliases = [...aliases, alias]
 				}
 			}})
+	}
+}
+
+class SolidifyLinkModal extends Modal {
+	activeFile: TFile
+	linkedFiles: string[]
+
+	constructor(app: App, activeFile: TFile, linkedFiles: string[]) {
+		super(app);
+		this.activeFile = activeFile
+		this.linkedFiles = linkedFiles
+	}
+
+	onOpen() {
+		const {contentEl} = this;
+		const name = this.activeFile.name.replace(".md","")
+		contentEl.createEl("p", { text: `Are you sure you want to solidify links for ${name}? This will change all links to be of the form [[${name}|DisplayName]] so that changing this file name won't change their display name.` });
+		new Setting(contentEl)
+		.addButton((btn) =>
+			btn
+			.setButtonText("Confirm")
+			.setCta()
+			.onClick(() => {
+				this.linkedFiles.map( async (file) => {
+				const cache = this.app.metadataCache.getCache(file)
+				const currentFile = this.app.vault.getFileByPath(file)
+				if (!cache || !currentFile){
+					return
+				}
+				let cacheLinks = cache.links
+				if (!cacheLinks){
+					return
+				}
+				cacheLinks = cacheLinks.filter((l) => l.link.toLowerCase() == this.activeFile.basename.toLowerCase())
+				cacheLinks = cacheLinks.filter((l)=> !(l.original.contains("|")))
+				let cacheLinks2: string[][] = cacheLinks.map((l) => [l.original, l.link, l.displayText ?l.displayText: l.link])
+				cacheLinks2 = [... new Set(cacheLinks2)]
+				
+				let fileContent = await this.app.vault.read(currentFile);
+
+				cacheLinks2.forEach((l) => fileContent = fileContent.replace(l[0], "[["+l[1]+"|"+l[2]+"]]"))
+
+				await this.app.vault.modify(currentFile, fileContent);
+				
+			});
+
+				this.close();
+			}));
+	}
+
+	onClose() {
+		const {contentEl} = this;
+		contentEl.empty();
 	}
 }
 
