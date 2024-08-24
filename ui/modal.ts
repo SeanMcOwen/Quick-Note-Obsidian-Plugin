@@ -202,7 +202,17 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 	}
 	async addAlias(displayName: string){
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		await this.app.fileManager.processFrontMatter(this.aliasItem!, (frontMatter) => { const aliases = frontMatter.aliases
+		await this.app.fileManager.processFrontMatter(this.aliasItem!, (frontMatter) => { 
+			
+
+			let aliases = frontMatter.aliases
+			if (frontMatter.alias){
+				aliases = [...aliases, ...frontMatter.alias]
+				aliases = [... new Set(aliases)]
+			}
+			frontMatter.alias = undefined
+			frontMatter.aliases = aliases
+
 			if(aliases === undefined){
 				frontMatter.aliases = [displayName]
 			}
