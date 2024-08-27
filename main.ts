@@ -4,18 +4,15 @@ import {SettingTab} from "./ui/setting"
 
 // Remember to rename these classes and interfaces!
 
-interface MyPluginSettings {
-	mySetting: string;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface QuiteNoteSettings {}
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
-}
+const DEFAULT_SETTINGS: QuiteNoteSettings = {}
 
 
 
 export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+	settings: QuiteNoteSettings;
 	notes: TFile[]
 
 	async onload() {
