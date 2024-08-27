@@ -1,3 +1,12 @@
+# Quick Note Plugin
+
+The following plugin is a very early stage Obsidian plugin meant to accelerate the speed of note taking and linking with additional features. The core features are:
+
+- **Find Possible Aliases**
+- **Solidify Links**
+- **Silently Create Note**
+- **Link to Note as Alias**
+
 # Obsidian Sample Plugin
 
 This is a sample plugin for Obsidian (https://obsidian.md).
