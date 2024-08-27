@@ -1,19 +1,18 @@
-import { App, Editor, MarkdownView, Modal, Plugin, PluginSettingTab, Setting, TAbstractFile, FuzzySuggestModal, TFile, TextComponent } from 'obsidian';
+import { Editor, MarkdownView, Plugin, TAbstractFile, TFile } from 'obsidian';
+import { UnusedAliasModal, SolidifyLinkModal, AliasLinkModal } from "./ui/modal";
+import {SettingTab} from "./ui/setting"
 
 // Remember to rename these classes and interfaces!
 
-interface MyPluginSettings {
-	mySetting: string;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface QuickNoteSettings {}
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
-}
+const DEFAULT_SETTINGS: QuickNoteSettings = {}
 
 
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class QuickNotePlugin extends Plugin {
+	settings: QuickNoteSettings;
 	notes: TFile[]
 
 	async onload() {
@@ -113,13 +112,8 @@ export default class MyPlugin extends Plugin {
 		setTimeout(() => this.notes = this.getAllNotes(), 200)
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new SettingTab(this.app, this));
 
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-		});
 
 		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
 		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
@@ -177,248 +171,4 @@ export default class MyPlugin extends Plugin {
 	}
 }
 
-class AliasLinkModal extends Modal{
-	editor: Editor
-	plugin: MyPlugin
-	aliasItem: TFile | undefined
-	addAliasBool: boolean
-	displayName: string
-	constructor(app: App, editor: Editor, plugin: MyPlugin) {
-		super(app);
-		this.editor = editor
-		this.plugin = plugin
-		this.addAliasBool = true
-	}
-	onOpen() {
-		const {contentEl} = this;
-		this.plugin.notes = this.plugin.getAllNotes()
-		//setTimeout(() => this.plugin.notes = this.plugin.getAllNotes(), 100)
-		
-		contentEl.createEl("h1", { text: "Link as Alias" });
 
-		this.displayName = this.editor.getSelection()
-
-		new Setting(contentEl).setName("Display Text:").addText((text) =>
-			{
-				text.setValue(this.displayName)
-				text.onChange((value) => {this.displayName=value})
-			}
-	
-			);
-
-		const handler = (item: TFile, evt: MouseEvent | KeyboardEvent) => {this.aliasItem=item}
-
-		new Setting(contentEl).setName("Alias").addText((text) =>
-		{
-			text.inputEl.onClickEvent(() => new AliasSuggestModel(this.app, this.plugin, handler, text).open())
-			text.onChange((value) => {
-				const opt = this.plugin.notes.filter((v) => v.path.toLowerCase().replace(".md","") === value.toLowerCase())
-				if (opt.length == 0){
-					this.aliasItem = undefined
-				}
-				else {
-					this.aliasItem = opt[0]
-				}
-				})
-		}
-
-		);
-
-		new Setting(contentEl)
-		.addButton((btn) =>
-			btn
-			.setButtonText("Submit")
-			.setCta()
-			.onClick(() => {
-				if(this.aliasItem){
-					const selectedText = this.displayName
-					this.editor.replaceSelection("[[" + this.aliasItem.path.replace(".md","")+"|"+ selectedText + "]]")
-					if (this.addAliasBool && this.aliasItem !== undefined){this.addAlias(selectedText)}
-					this.close();
-				}
-				else{
-					alert("Invalid alias!")
-				}
-				
-			}));
-
-			new Setting(contentEl)
-            .setName('Add Display Name as Alias')
-            .addToggle(toggle => {
-				this.addAliasBool = toggle.getValue()
-
-                toggle.onChange(value => {
-                    this.addAliasBool = value
-                });
-            });
-
-	}
-	async addAlias(displayName: string){
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		await this.app.fileManager.processFrontMatter(this.aliasItem!, (frontMatter) => { const aliases = frontMatter.aliases
-			if(aliases === undefined){
-				frontMatter.aliases = [displayName]
-			}
-			else{
-				if (!aliases.map((x: string) => x.toLowerCase()).contains(displayName.toLowerCase())){
-					frontMatter.aliases = [...aliases, displayName]
-				}
-			}})
-	}
-
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
-	}
-}
-
-
-export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
-	plugin: MyPlugin
-	textComponent: TextComponent
-	handler: (item: TFile, evt: MouseEvent | KeyboardEvent) => void
-	constructor(app: App, plugin: MyPlugin, handler: (item: TFile, evt: MouseEvent | KeyboardEvent) => void, text: TextComponent) {
-		super(app);
-		this.plugin = plugin
-		this.handler = handler
-		this.textComponent = text
-	}
-	getItems(): TFile[] {
-		return this.plugin.notes;
-	}
-  
-	getItemText(item: TFile): string {
-		return item.path.replace(".md","");
-	}
-  
-	onChooseItem(item: TFile, evt: MouseEvent | KeyboardEvent) {
-		this.handler(item, evt)
-		this.textComponent.setValue(item.path.replace(".md",""))
-	}
-  }
-
-class UnusedAliasModal extends Modal {
-	activeFile: TFile
-	newAliases: string[]
-
-	constructor(app: App, activeFile: TFile, newAliases: string[]) {
-		super(app);
-		this.activeFile = activeFile
-		this.newAliases = newAliases
-	}
-
-	onOpen() {
-		const {contentEl} = this;
-
-		contentEl.createEl("h1", { text: "Potential Aliases ("+this.newAliases.length.toString()+")" });
-		this.newAliases.map((alias) => new Setting(contentEl).setName(alias)
-		.addButton((btn) =>
-			btn
-			.setButtonText("Add Alias")
-			.setCta()
-			.onClick(() => {
-				btn.setDisabled(true)
-				this.addAlias(alias)
-			})))
-		
-
-	}
-
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
-	}
-
-	async addAlias(alias: string){
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		await this.app.fileManager.processFrontMatter(this.activeFile, (frontMatter) => { const aliases = frontMatter.aliases
-			if(aliases === undefined){
-				frontMatter.aliases = [alias]
-			}
-			else{
-				if (!aliases.map((x: string) => x.toLowerCase()).contains(alias.toLowerCase())){
-					frontMatter.aliases = [...aliases, alias]
-				}
-			}})
-	}
-}
-
-class SolidifyLinkModal extends Modal {
-	activeFile: TFile
-	linkedFiles: string[]
-
-	constructor(app: App, activeFile: TFile, linkedFiles: string[]) {
-		super(app);
-		this.activeFile = activeFile
-		this.linkedFiles = linkedFiles
-	}
-
-	onOpen() {
-		const {contentEl} = this;
-		const name = this.activeFile.name.replace(".md","")
-		contentEl.createEl("p", { text: `Are you sure you want to solidify links for ${name}? This will change all links to be of the form [[${name}|DisplayName]] so that changing this file name won't change their display name.` });
-		new Setting(contentEl)
-		.addButton((btn) =>
-			btn
-			.setButtonText("Confirm")
-			.setCta()
-			.onClick(() => {
-				this.linkedFiles.map( async (file) => {
-				const cache = this.app.metadataCache.getCache(file)
-				const currentFile = this.app.vault.getFileByPath(file)
-				if (!cache || !currentFile){
-					return
-				}
-				let cacheLinks = cache.links
-				if (!cacheLinks){
-					return
-				}
-				cacheLinks = cacheLinks.filter((l) => l.link.toLowerCase() == this.activeFile.basename.toLowerCase())
-				cacheLinks = cacheLinks.filter((l)=> !(l.original.contains("|")))
-				let cacheLinks2: string[][] = cacheLinks.map((l) => [l.original, l.link, l.displayText ?l.displayText: l.link])
-				cacheLinks2 = [... new Set(cacheLinks2)]
-				
-				let fileContent = await this.app.vault.read(currentFile);
-
-				cacheLinks2.forEach((l) => fileContent = fileContent.replace(l[0], "[["+l[1]+"|"+l[2]+"]]"))
-
-				await this.app.vault.modify(currentFile, fileContent);
-				
-			});
-
-				this.close();
-			}));
-	}
-
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
-	}
-}
-
-
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
-
-	constructor(app: App, plugin: MyPlugin) {
-		super(app, plugin);
-		this.plugin = plugin;
-	}
-
-	display(): void {
-		const {containerEl} = this;
-
-		containerEl.empty();
-
-		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
-				}));
-	}
-}
