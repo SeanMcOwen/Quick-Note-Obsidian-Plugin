@@ -29,8 +29,8 @@ export default class QuickNotePlugin extends Plugin {
 
 
 			const linkedFiles = Object.entries(this.app.metadataCache.resolvedLinks).filter(([_, value]) => Object.keys(value).contains(activeFile.name)).map(([key, _]) => key)
-			const unresolvedLinks = this.app.metadataCache.unresolvedLinks;
-			console.log(unresolvedLinks)
+			//const unresolvedLinks = this.app.metadataCache.unresolvedLinks;
+			//console.log(unresolvedLinks)
 			
 			let aliases = linkedFiles.map( (file) => {
 				const cache = this.app.metadataCache.getCache(file)
@@ -61,7 +61,9 @@ export default class QuickNotePlugin extends Plugin {
 			else {
 				oldAliases = cache.frontmatter.aliases
 			}
+			oldAliases = [...oldAliases, activeFile.basename.replace(".md","")]
 			oldAliases = oldAliases.map((x)=> x.toLowerCase())
+			console.log(oldAliases)
 			const newAliases = aliases.filter((item): item is string => item !== undefined).filter((x) => !(oldAliases.contains(x.toLowerCase())))
 			console.log(newAliases)
 
