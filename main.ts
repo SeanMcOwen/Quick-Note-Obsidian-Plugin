@@ -1,5 +1,5 @@
 import { Editor, MarkdownView, Plugin, TAbstractFile, TFile } from 'obsidian';
-import { UnusedAliasModal, SolidifyLinkModal, AliasLinkModal } from "./ui/modal";
+import { UnusedAliasModal, SolidifyLinkModal, AliasLinkModal, SilentNoteModal } from "./ui/modal";
 import {SettingTab} from "./ui/setting"
 
 // Remember to rename these classes and interfaces!
@@ -161,11 +161,9 @@ export default class QuickNotePlugin extends Plugin {
 	createNoteSilent2(editor: Editor){
 		const selectedText = editor.getSelection()
 		const allFiles = this.app.vault.getAllLoadedFiles().map((x: TAbstractFile) => {return x.name.toLowerCase().replace(".md", "")})
-		console.log("TO IMPLEMENT")
-		console.log(selectedText)
-		console.log(allFiles)
-		// if (!allFiles.contains(selectedText.toLowerCase())){this.createNote(selectedText)}
-		// editor.replaceSelection("[[" + selectedText + "]]")
+		new SilentNoteModal(this, selectedText, allFiles).open()
+		
+		
 	}
 
 	aliasLink(editor: Editor){

@@ -124,6 +124,36 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 	}
   }
 
+  export class SilentNoteModal extends Modal{
+	plugin: MyPlugin
+	selectedText: string
+	allFiles: string[]
+
+	constructor(plugin: MyPlugin, selectedText: string, allFiles: string[]) {
+		super(plugin.app);
+		this.selectedText = selectedText
+		this.allFiles = allFiles
+	}
+
+	onOpen() {
+		const {contentEl} = this;
+
+		contentEl.createEl("h1", { text: "Create new silent note"});
+		console.log("TO IMPLEMENT")
+		console.log(this.selectedText)
+		console.log(this.allFiles)
+
+		// if (!allFiles.contains(selectedText.toLowerCase())){this.createNote(selectedText)}
+		// editor.replaceSelection("[[" + selectedText + "]]")
+	}
+
+	onClose() {
+		const {contentEl} = this;
+		contentEl.empty();
+	}
+
+  }
+
   export class AliasLinkModal extends Modal{
 	editor: Editor
 	plugin: MyPlugin
