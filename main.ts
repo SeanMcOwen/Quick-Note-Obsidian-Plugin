@@ -130,6 +130,14 @@ export default class QuickNotePlugin extends Plugin {
 
 		this.registerEvent(this.app.workspace.on('editor-menu', (menu, editor, view) => {
             menu.addItem(item => {
+                item.setTitle('Silently Create Note with Different Name');
+                item.setIcon('pencil'); 
+                item.onClick(() => this.createNoteSilent2(editor));
+            });
+        }));
+
+		this.registerEvent(this.app.workspace.on('editor-menu', (menu, editor, view) => {
+            menu.addItem(item => {
                 item.setTitle('Link to Note as Alias');
                 item.setIcon('pencil');
                 item.onClick(() => this.aliasLink(editor));
@@ -148,6 +156,16 @@ export default class QuickNotePlugin extends Plugin {
 		const allFiles = this.app.vault.getAllLoadedFiles().map((x: TAbstractFile) => {return x.name.toLowerCase().replace(".md", "")})
 		if (!allFiles.contains(selectedText.toLowerCase())){this.createNote(selectedText)}
 		editor.replaceSelection("[[" + selectedText + "]]")
+	}
+
+	createNoteSilent2(editor: Editor){
+		const selectedText = editor.getSelection()
+		const allFiles = this.app.vault.getAllLoadedFiles().map((x: TAbstractFile) => {return x.name.toLowerCase().replace(".md", "")})
+		console.log("TO IMPLEMENT")
+		console.log(selectedText)
+		console.log(allFiles)
+		// if (!allFiles.contains(selectedText.toLowerCase())){this.createNote(selectedText)}
+		// editor.replaceSelection("[[" + selectedText + "]]")
 	}
 
 	aliasLink(editor: Editor){
