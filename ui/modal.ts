@@ -130,13 +130,15 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 	noteText: string
 	allFiles: string[]
 	addAliasBool: boolean
+	editor: Editor
 
-	constructor(plugin: MyPlugin, selectedText: string, allFiles: string[]) {
+	constructor(plugin: MyPlugin, selectedText: string, allFiles: string[], editor: Editor) {
 		super(plugin.app);
 		this.selectedText = selectedText
 		this.allFiles = allFiles
 		this.noteText = selectedText
 		this.addAliasBool = true
+		this.editor = editor
 	}
 
 	onOpen() {
@@ -161,6 +163,19 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
                     this.addAliasBool = value
                 });
             });
+
+		new Setting(contentEl)
+			.addButton((btn) =>
+				btn
+				.setButtonText("Submit")
+				.setCta()
+				.onClick(() => {
+						// make note
+						this.editor.replaceSelection("[[" + this.noteText+"|"+ this.selectedText + "]]")
+						//if (this.addAliasBool && this.aliasItem !== undefined){this.addAlias(selectedText)}
+						this.close();
+
+				}));
 
 
 		// if (!allFiles.contains(selectedText.toLowerCase())){this.createNote(selectedText)}

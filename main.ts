@@ -161,7 +161,7 @@ export default class QuickNotePlugin extends Plugin {
 	createNoteSilent2(editor: Editor){
 		const selectedText = editor.getSelection()
 		const allFiles = this.app.vault.getAllLoadedFiles().map((x: TAbstractFile) => {return x.name.toLowerCase().replace(".md", "")})
-		new SilentNoteModal(this, selectedText, allFiles).open()
+		new SilentNoteModal(this, selectedText, allFiles, editor).open()
 		
 		
 	}
