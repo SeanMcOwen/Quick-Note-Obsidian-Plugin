@@ -127,21 +127,41 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
   export class SilentNoteModal extends Modal{
 	plugin: MyPlugin
 	selectedText: string
+	noteText: string
 	allFiles: string[]
+	addAliasBool: boolean
 
 	constructor(plugin: MyPlugin, selectedText: string, allFiles: string[]) {
 		super(plugin.app);
 		this.selectedText = selectedText
 		this.allFiles = allFiles
+		this.noteText = selectedText
+		this.addAliasBool = true
 	}
 
 	onOpen() {
 		const {contentEl} = this;
 
 		contentEl.createEl("h1", { text: "Create new silent note"});
-		console.log("TO IMPLEMENT")
-		console.log(this.selectedText)
-		console.log(this.allFiles)
+
+		new Setting(contentEl).setName("New File Name:").addText((text) =>
+			{
+				text.setValue(this.selectedText)
+				text.onChange((value) => {this.noteText=value})
+			}
+	
+			);
+
+		new Setting(contentEl)
+            .setName('Add "'+this.selectedText+'" as an Alias')
+            .addToggle(toggle => {
+				this.addAliasBool = toggle.getValue()
+
+                toggle.onChange(value => {
+                    this.addAliasBool = value
+                });
+            });
+
 
 		// if (!allFiles.contains(selectedText.toLowerCase())){this.createNote(selectedText)}
 		// editor.replaceSelection("[[" + selectedText + "]]")
