@@ -171,7 +171,10 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 				.setCta()
 				.onClick(async () => {
 						const fileName = this.noteText+".md";
-						await this.app.vault.create(fileName, '');
+						if (this.allFiles.map((x) => x.toLowerCase()).contains(this.noteText.toLowerCase())){
+							alert("Name already used!")
+						}
+						else{await this.app.vault.create(fileName, '');}
 						this.editor.replaceSelection("[[" + this.noteText+"|"+ this.selectedText + "]]")
 						if (this.addAliasBool){this.addAlias(this.selectedText, this.noteText)}
 						this.close();
