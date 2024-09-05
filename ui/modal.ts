@@ -124,6 +124,84 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 	}
   }
 
+  export class SilentNoteModal extends Modal{
+	plugin: MyPlugin
+	selectedText: string
+	noteText: string
+	allFiles: string[]
+	addAliasBool: boolean
+	editor: Editor
+
+	constructor(plugin: MyPlugin, selectedText: string, allFiles: string[], editor: Editor) {
+		super(plugin.app);
+		this.selectedText = selectedText
+		this.allFiles = allFiles
+		this.noteText = selectedText
+		this.addAliasBool = true
+		this.editor = editor
+	}
+
+	onOpen() {
+		const {contentEl} = this;
+
+		contentEl.createEl("h1", { text: "Create new silent note"});
+
+		new Setting(contentEl).setName("New File Name:").addText((text) =>
+			{
+				text.setValue(this.selectedText)
+				text.onChange((value) => {this.noteText=value})
+			}
+	
+			);
+
+		new Setting(contentEl)
+            .setName('Add "'+this.selectedText+'" as an Alias')
+            .addToggle(toggle => {
+				this.addAliasBool = toggle.getValue()
+
+                toggle.onChange(value => {
+                    this.addAliasBool = value
+                });
+            });
+
+		new Setting(contentEl)
+			.addButton((btn) =>
+				btn
+				.setButtonText("Submit")
+				.setCta()
+				.onClick(async () => {
+						const fileName = this.noteText+".md";
+						await this.app.vault.create(fileName, '');
+						this.editor.replaceSelection("[[" + this.noteText+"|"+ this.selectedText + "]]")
+						if (this.addAliasBool){this.addAlias(this.selectedText, this.noteText)}
+						this.close();
+
+				}));
+	}
+
+	onClose() {
+		const {contentEl} = this;
+		contentEl.empty();
+	}
+
+	async addAlias(alias: string, sourceFile: string){
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const sourceFile2 = this.app.vault.getFileByPath(sourceFile+".md")!
+
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		await this.app.fileManager.processFrontMatter(sourceFile2, (frontMatter) => { const aliases = frontMatter.aliases
+			if(aliases === undefined){
+				frontMatter.aliases = [alias]
+			}
+			else{
+				if (!aliases.map((x: string) => x.toLowerCase()).contains(alias.toLowerCase())){
+					frontMatter.aliases = [...aliases, alias]
+				}
+			}})
+	}
+
+  }
+
   export class AliasLinkModal extends Modal{
 	editor: Editor
 	plugin: MyPlugin
