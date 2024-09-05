@@ -2,8 +2,6 @@ import { Editor, MarkdownView, Plugin, TAbstractFile, TFile } from 'obsidian';
 import { UnusedAliasModal, SolidifyLinkModal, AliasLinkModal, SilentNoteModal } from "./ui/modal";
 import {SettingTab} from "./ui/setting"
 
-// Remember to rename these classes and interfaces!
-
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface QuickNoteSettings {}
 

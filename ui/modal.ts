@@ -1,5 +1,5 @@
 import { App, Editor, Modal, Setting, FuzzySuggestModal, TFile, TextComponent } from 'obsidian';
-import MyPlugin from "../main"
+import QuickNotePlugin from "../main"
 
 export class SolidifyLinkModal extends Modal {
 	activeFile: TFile
@@ -101,10 +101,10 @@ export class UnusedAliasModal extends Modal {
 }
 
 export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
-	plugin: MyPlugin
+	plugin: QuickNotePlugin
 	textComponent: TextComponent
 	handler: (item: TFile, evt: MouseEvent | KeyboardEvent) => void
-	constructor(app: App, plugin: MyPlugin, handler: (item: TFile, evt: MouseEvent | KeyboardEvent) => void, text: TextComponent) {
+	constructor(app: App, plugin: QuickNotePlugin, handler: (item: TFile, evt: MouseEvent | KeyboardEvent) => void, text: TextComponent) {
 		super(app);
 		this.plugin = plugin
 		this.handler = handler
@@ -125,14 +125,14 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
   }
 
   export class SilentNoteModal extends Modal{
-	plugin: MyPlugin
+	plugin: QuickNotePlugin
 	selectedText: string
 	noteText: string
 	allFiles: string[]
 	addAliasBool: boolean
 	editor: Editor
 
-	constructor(plugin: MyPlugin, selectedText: string, allFiles: string[], editor: Editor) {
+	constructor(plugin: QuickNotePlugin, selectedText: string, allFiles: string[], editor: Editor) {
 		super(plugin.app);
 		this.selectedText = selectedText
 		this.allFiles = allFiles
@@ -207,11 +207,11 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 
   export class AliasLinkModal extends Modal{
 	editor: Editor
-	plugin: MyPlugin
+	plugin: QuickNotePlugin
 	aliasItem: TFile | undefined
 	addAliasBool: boolean
 	displayName: string
-	constructor(app: App, editor: Editor, plugin: MyPlugin) {
+	constructor(app: App, editor: Editor, plugin: QuickNotePlugin) {
 		super(app);
 		this.editor = editor
 		this.plugin = plugin
