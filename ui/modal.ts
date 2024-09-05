@@ -169,22 +169,35 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 				btn
 				.setButtonText("Submit")
 				.setCta()
-				.onClick(() => {
-						// make note
+				.onClick(async () => {
+						const fileName = this.noteText+".md";
+						await this.app.vault.create(fileName, '');
 						this.editor.replaceSelection("[[" + this.noteText+"|"+ this.selectedText + "]]")
-						//if (this.addAliasBool && this.aliasItem !== undefined){this.addAlias(selectedText)}
+						if (this.addAliasBool){this.addAlias(this.selectedText, this.noteText)}
 						this.close();
 
 				}));
-
-
-		// if (!allFiles.contains(selectedText.toLowerCase())){this.createNote(selectedText)}
-		// editor.replaceSelection("[[" + selectedText + "]]")
 	}
 
 	onClose() {
 		const {contentEl} = this;
 		contentEl.empty();
+	}
+
+	async addAlias(alias: string, sourceFile: string){
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const sourceFile2 = this.app.vault.getFileByPath(sourceFile+".md")!
+
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		await this.app.fileManager.processFrontMatter(sourceFile2, (frontMatter) => { const aliases = frontMatter.aliases
+			if(aliases === undefined){
+				frontMatter.aliases = [alias]
+			}
+			else{
+				if (!aliases.map((x: string) => x.toLowerCase()).contains(alias.toLowerCase())){
+					frontMatter.aliases = [...aliases, alias]
+				}
+			}})
 	}
 
   }
