@@ -19,7 +19,7 @@ export default class QuickNotePlugin extends Plugin {
 		const ribbonIconEl = this.addRibbonIcon('merge', 'Find Possible Aliases', (evt: MouseEvent) => {
 			const activeFile = this.app.workspace.getActiveFile()
 			if (!activeFile) {
-				console.log('No active file found.');
+				alert("No active file!")
 				return;
 			}
 
@@ -27,8 +27,6 @@ export default class QuickNotePlugin extends Plugin {
 
 
 			const linkedFiles = Object.entries(this.app.metadataCache.resolvedLinks).filter(([_, value]) => Object.keys(value).contains(activeFile.name)).map(([key, _]) => key)
-			//const unresolvedLinks = this.app.metadataCache.unresolvedLinks;
-			//console.log(unresolvedLinks)
 			
 			let aliases = linkedFiles.map( (file) => {
 				const cache = this.app.metadataCache.getCache(file)
@@ -49,21 +47,19 @@ export default class QuickNotePlugin extends Plugin {
 			const cache = this.app.metadataCache.getFileCache(activeFile)
 
 			if (!cache){
-				console.log('No cache');
+				alert('No cache');
 				return;
 			}
 			let oldAliases: string[] = []
 			if (!cache.frontmatter || !cache.frontmatter.aliases){
-				console.log('No aliases for the cache');
+				alert('No aliases for the cache');
 			}
 			else {
 				oldAliases = cache.frontmatter.aliases
 			}
 			oldAliases = [...oldAliases, activeFile.basename.replace(".md","")]
 			oldAliases = oldAliases.map((x)=> x.toLowerCase())
-			console.log(oldAliases)
 			const newAliases = aliases.filter((item): item is string => item !== undefined).filter((x) => !(oldAliases.contains(x.toLowerCase())))
-			console.log(newAliases)
 
 			new UnusedAliasModal(this.app, activeFile, newAliases).open();
 		});
