@@ -72,7 +72,7 @@ export default class QuickNotePlugin extends Plugin {
 			const activeFile = this.app.workspace.getActiveFile()
 
 			if (!activeFile) {
-				console.log('No active file found.');
+				alert("No active file!")
 				return;
 			}
 
