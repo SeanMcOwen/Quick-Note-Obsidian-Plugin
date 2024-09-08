@@ -15,4 +15,6 @@ The following plugin is a very early stage Obsidian plugin meant to accelerate t
 
 ## Silenty Create Note
 
+## Silently Create Note with Different Name
+
 ## Link to Note as Alias

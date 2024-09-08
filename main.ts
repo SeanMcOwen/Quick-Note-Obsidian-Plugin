@@ -51,10 +51,7 @@ export default class QuickNotePlugin extends Plugin {
 				return;
 			}
 			let oldAliases: string[] = []
-			if (!cache.frontmatter || !cache.frontmatter.aliases){
-				alert('No aliases for the cache');
-			}
-			else {
+			if (!(!cache.frontmatter || !cache.frontmatter.aliases)){
 				oldAliases = cache.frontmatter.aliases
 			}
 			oldAliases = [...oldAliases, activeFile.basename.replace(".md","")]
