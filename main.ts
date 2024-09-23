@@ -16,7 +16,7 @@ export default class QuickNotePlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		const ribbonIconEl = this.addRibbonIcon('merge', 'Find Possible Aliases', (evt: MouseEvent) => {
+		this.addRibbonIcon('merge', 'Find Possible Aliases', (evt: MouseEvent) => {
 			const activeFile = this.app.workspace.getActiveFile()
 			if (!activeFile) {
 				alert("No active file!")
@@ -78,16 +78,11 @@ export default class QuickNotePlugin extends Plugin {
 			
 		})
 
-		// Perform additional things with the ribbon
-		ribbonIconEl.addClass('my-plugin-ribbon-class');
 
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
+
 
 		setTimeout(() => this.notes = this.getAllNotes(), 200)
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new SettingTab(this.app, this));
 
 		this.registerEvent(this.app.workspace.on('editor-menu', (menu, editor, view) => {
