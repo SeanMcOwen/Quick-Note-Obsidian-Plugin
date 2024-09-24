@@ -3,7 +3,7 @@
 	"name": "Quick Notes",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "A plugin for speeding up some note taking abilities",
+	"description": "Speeds up some note taking abilities and allows for creating notes/links in the background",
 	"author": "Sean McOwen",
 	"authorUrl": "https://github.com/SeanMcOwen",
 	"fundingUrl": "",
