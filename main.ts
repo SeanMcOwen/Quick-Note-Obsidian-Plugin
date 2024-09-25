@@ -16,7 +16,7 @@ export default class QuickNotePlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		this.addRibbonIcon('merge', 'Find Possible Aliases', (evt: MouseEvent) => {
+		this.addRibbonIcon('merge', 'Find possible aliases', (evt: MouseEvent) => {
 			const activeFile = this.app.workspace.getActiveFile()
 			if (!activeFile) {
 				alert("No active file!")
@@ -61,7 +61,7 @@ export default class QuickNotePlugin extends Plugin {
 			new UnusedAliasModal(this.app, activeFile, newAliases).open();
 		});
 
-		this.addRibbonIcon('shield', 'Solidify Links', (evt: MouseEvent) => {
+		this.addRibbonIcon('shield', 'Solidify links', (evt: MouseEvent) => {
 			const activeFile = this.app.workspace.getActiveFile()
 
 			if (!activeFile) {
@@ -87,7 +87,7 @@ export default class QuickNotePlugin extends Plugin {
 
 		this.registerEvent(this.app.workspace.on('editor-menu', (menu, editor, view) => {
             menu.addItem(item => {
-                item.setTitle('Silently Create Note');
+                item.setTitle('Silently create note');
                 item.setIcon('pencil'); 
                 item.onClick(() => this.createNoteSilent(editor));
             });
@@ -95,7 +95,7 @@ export default class QuickNotePlugin extends Plugin {
 
 		this.registerEvent(this.app.workspace.on('editor-menu', (menu, editor, view) => {
             menu.addItem(item => {
-                item.setTitle('Silently Create Note with Different Name');
+                item.setTitle('Silently create note with different name');
                 item.setIcon('pencil'); 
                 item.onClick(() => this.createNoteSilent2(editor));
             });
@@ -103,7 +103,7 @@ export default class QuickNotePlugin extends Plugin {
 
 		this.registerEvent(this.app.workspace.on('editor-menu', (menu, editor, view) => {
             menu.addItem(item => {
-                item.setTitle('Link to Note as Alias');
+                item.setTitle('Link to note as alias');
                 item.setIcon('pencil');
                 item.onClick(() => this.aliasLink(editor));
             });

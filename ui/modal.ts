@@ -67,7 +67,7 @@ export class UnusedAliasModal extends Modal {
 	onOpen() {
 		const {contentEl} = this;
 
-		contentEl.createEl("h1", { text: "Potential Aliases ("+this.newAliases.length.toString()+")" });
+		contentEl.createEl("h1", { text: "Potential aliases ("+this.newAliases.length.toString()+")" });
 		this.newAliases.map((alias) => new Setting(contentEl).setName(alias)
 		.addButton((btn) =>
 			btn
@@ -146,7 +146,7 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 
 		contentEl.createEl("h1", { text: "Create new silent note"});
 
-		new Setting(contentEl).setName("New File Name:").addText((text) =>
+		new Setting(contentEl).setName("New file name:").addText((text) =>
 			{
 				text.setValue(this.selectedText)
 				text.onChange((value) => {this.noteText=value})
@@ -155,7 +155,7 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 			);
 
 		new Setting(contentEl)
-            .setName('Add "'+this.selectedText+'" as an Alias')
+            .setName('Add "'+this.selectedText+'" as an alias')
             .addToggle(toggle => {
 				this.addAliasBool = toggle.getValue()
 
@@ -222,11 +222,11 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 		this.plugin.notes = this.plugin.getAllNotes()
 		//setTimeout(() => this.plugin.notes = this.plugin.getAllNotes(), 100)
 		
-		contentEl.createEl("h1", { text: "Link as Alias" });
+		contentEl.createEl("h1", { text: "Link as alias" });
 
 		this.displayName = this.editor.getSelection()
 
-		new Setting(contentEl).setName("Display Text:").addText((text) =>
+		new Setting(contentEl).setName("Display text:").addText((text) =>
 			{
 				text.setValue(this.displayName)
 				text.onChange((value) => {this.displayName=value})
@@ -271,7 +271,7 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 			}));
 
 			new Setting(contentEl)
-            .setName('Add Display Name as Alias')
+            .setName('Add display name as alias')
             .addToggle(toggle => {
 				this.addAliasBool = toggle.getValue()
 
