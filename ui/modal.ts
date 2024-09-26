@@ -1,4 +1,4 @@
-import { App, Editor, Modal, Setting, FuzzySuggestModal, TFile, TextComponent } from 'obsidian';
+import { App, Editor, Modal, Setting, FuzzySuggestModal, TFile, TextComponent, Notice } from 'obsidian';
 import QuickNotePlugin from "../main"
 
 export class SolidifyLinkModal extends Modal {
@@ -172,7 +172,7 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 				.onClick(async () => {
 						const fileName = this.noteText+".md";
 						if (this.allFiles.map((x) => x.toLowerCase()).contains(this.noteText.toLowerCase())){
-							alert("Name already used!")
+							new Notice("Name already used!")
 						}
 						else{await this.app.vault.create(fileName, '');}
 						this.editor.replaceSelection("[[" + this.noteText+"|"+ this.selectedText + "]]")
@@ -265,7 +265,7 @@ export class AliasSuggestModel extends FuzzySuggestModal<TFile> {
 					this.close();
 				}
 				else{
-					alert("Invalid alias!")
+					new Notice("Invalid alias!")
 				}
 				
 			}));

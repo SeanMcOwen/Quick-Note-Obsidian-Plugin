@@ -1,4 +1,4 @@
-import { Editor, Plugin, TAbstractFile, TFile } from 'obsidian';
+import { Editor, Plugin, TAbstractFile, TFile, Notice } from 'obsidian';
 import { UnusedAliasModal, SolidifyLinkModal, AliasLinkModal, SilentNoteModal } from "./ui/modal";
 import {SettingTab} from "./ui/setting"
 
@@ -19,7 +19,7 @@ export default class QuickNotePlugin extends Plugin {
 		this.addRibbonIcon('merge', 'Find possible aliases', (evt: MouseEvent) => {
 			const activeFile = this.app.workspace.getActiveFile()
 			if (!activeFile) {
-				alert("No active file!")
+				new Notice("No active file!")
 				return;
 			}
 
@@ -47,7 +47,7 @@ export default class QuickNotePlugin extends Plugin {
 			const cache = this.app.metadataCache.getFileCache(activeFile)
 
 			if (!cache){
-				alert('No cache');
+				new Notice('No cache');
 				return;
 			}
 			let oldAliases: string[] = []
@@ -65,7 +65,7 @@ export default class QuickNotePlugin extends Plugin {
 			const activeFile = this.app.workspace.getActiveFile()
 
 			if (!activeFile) {
-				alert("No active file!")
+				new Notice("No active file!")
 				return;
 			}
 
