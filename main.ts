@@ -26,8 +26,7 @@ export default class QuickNotePlugin extends Plugin {
 
 
 
-			const linkedFiles = Object.entries(this.app.metadataCache.resolvedLinks).filter(([_, value]) => Object.keys(value).contains(activeFile.name)).map(([key, _]) => key)
-			
+			const linkedFiles = Object.entries(this.app.metadataCache.resolvedLinks).filter(([_, value]) => Object.keys(value).contains(activeFile.path)).map(([key, _]) => key)
 			let aliases = linkedFiles.map( (file) => {
 				const cache = this.app.metadataCache.getCache(file)
 				if (!cache){
