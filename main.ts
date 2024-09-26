@@ -1,4 +1,4 @@
-import { Editor, Plugin, TAbstractFile, TFile } from 'obsidian';
+import { Editor, Plugin, TAbstractFile, TFile, Notice } from 'obsidian';
 import { UnusedAliasModal, SolidifyLinkModal, AliasLinkModal, SilentNoteModal } from "./ui/modal";
 import {SettingTab} from "./ui/setting"
 
@@ -16,18 +16,17 @@ export default class QuickNotePlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		this.addRibbonIcon('merge', 'Find Possible Aliases', (evt: MouseEvent) => {
+		const findPossibleAliases = () => {
 			const activeFile = this.app.workspace.getActiveFile()
 			if (!activeFile) {
-				alert("No active file!")
+				new Notice("No active file!")
 				return;
 			}
 
 
 
 
-			const linkedFiles = Object.entries(this.app.metadataCache.resolvedLinks).filter(([_, value]) => Object.keys(value).contains(activeFile.name)).map(([key, _]) => key)
-			
+			const linkedFiles = Object.entries(this.app.metadataCache.resolvedLinks).filter(([_, value]) => Object.keys(value).contains(activeFile.path)).map(([key, _]) => key)
 			let aliases = linkedFiles.map( (file) => {
 				const cache = this.app.metadataCache.getCache(file)
 				if (!cache){
@@ -47,7 +46,7 @@ export default class QuickNotePlugin extends Plugin {
 			const cache = this.app.metadataCache.getFileCache(activeFile)
 
 			if (!cache){
-				alert('No cache');
+				new Notice('No cache');
 				return;
 			}
 			let oldAliases: string[] = []
@@ -59,25 +58,31 @@ export default class QuickNotePlugin extends Plugin {
 			const newAliases = aliases.filter((item): item is string => item !== undefined).filter((x) => !(oldAliases.contains(x.toLowerCase())))
 
 			new UnusedAliasModal(this.app, activeFile, newAliases).open();
-		});
+		}
 
-		this.addRibbonIcon('shield', 'Solidify Links', (evt: MouseEvent) => {
+		this.addRibbonIcon('merge', 'Find possible aliases', findPossibleAliases);
+		this.addCommand({
+			id: 'find-possible-aliases',
+			name: 'Find possible aliases',
+			callback: findPossibleAliases});
+
+
+		const solidfyLinks = () => {
 			const activeFile = this.app.workspace.getActiveFile()
-
 			if (!activeFile) {
-				alert("No active file!")
+				new Notice("No active file!")
 				return;
 			}
-
-
 			const linkedFiles = Object.entries(this.app.metadataCache.resolvedLinks).filter(([_, value]) => Object.keys(value).contains(activeFile.name)).map(([key, _]) => key)
-
-
-
 			if (activeFile){new SolidifyLinkModal(this.app, activeFile, linkedFiles).open()}
 			
-		})
+		}
 
+		this.addRibbonIcon('shield', 'Solidify links', solidfyLinks)
+		this.addCommand({
+			id: 'solidify-links',
+			name: 'Solidify links',
+			callback: solidfyLinks});
 
 
 
@@ -87,7 +92,7 @@ export default class QuickNotePlugin extends Plugin {
 
 		this.registerEvent(this.app.workspace.on('editor-menu', (menu, editor, view) => {
             menu.addItem(item => {
-                item.setTitle('Silently Create Note');
+                item.setTitle('Silently create note');
                 item.setIcon('pencil'); 
                 item.onClick(() => this.createNoteSilent(editor));
             });
@@ -95,7 +100,7 @@ export default class QuickNotePlugin extends Plugin {
 
 		this.registerEvent(this.app.workspace.on('editor-menu', (menu, editor, view) => {
             menu.addItem(item => {
-                item.setTitle('Silently Create Note with Different Name');
+                item.setTitle('Silently create note with different name');
                 item.setIcon('pencil'); 
                 item.onClick(() => this.createNoteSilent2(editor));
             });
@@ -103,7 +108,7 @@ export default class QuickNotePlugin extends Plugin {
 
 		this.registerEvent(this.app.workspace.on('editor-menu', (menu, editor, view) => {
             menu.addItem(item => {
-                item.setTitle('Link to Note as Alias');
+                item.setTitle('Link to note as alias');
                 item.setIcon('pencil');
                 item.onClick(() => this.aliasLink(editor));
             });
