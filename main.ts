@@ -16,7 +16,7 @@ export default class QuickNotePlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		this.addRibbonIcon('merge', 'Find possible aliases', (evt: MouseEvent) => {
+		const findPossibleAliases = () => {
 			const activeFile = this.app.workspace.getActiveFile()
 			if (!activeFile) {
 				new Notice("No active file!")
@@ -58,25 +58,31 @@ export default class QuickNotePlugin extends Plugin {
 			const newAliases = aliases.filter((item): item is string => item !== undefined).filter((x) => !(oldAliases.contains(x.toLowerCase())))
 
 			new UnusedAliasModal(this.app, activeFile, newAliases).open();
-		});
+		}
 
-		this.addRibbonIcon('shield', 'Solidify links', (evt: MouseEvent) => {
+		this.addRibbonIcon('merge', 'Find possible aliases', findPossibleAliases);
+		this.addCommand({
+			id: 'find-possible-aliases',
+			name: 'Find possible aliases',
+			callback: findPossibleAliases});
+
+
+		const solidfyLinks = () => {
 			const activeFile = this.app.workspace.getActiveFile()
-
 			if (!activeFile) {
 				new Notice("No active file!")
 				return;
 			}
-
-
 			const linkedFiles = Object.entries(this.app.metadataCache.resolvedLinks).filter(([_, value]) => Object.keys(value).contains(activeFile.name)).map(([key, _]) => key)
-
-
-
 			if (activeFile){new SolidifyLinkModal(this.app, activeFile, linkedFiles).open()}
 			
-		})
+		}
 
+		this.addRibbonIcon('shield', 'Solidify links', solidfyLinks)
+		this.addCommand({
+			id: 'solidify-links',
+			name: 'Solidify links',
+			callback: solidfyLinks});
 
 
 
